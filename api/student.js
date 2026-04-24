@@ -13,7 +13,7 @@ const Student =
 // ===== DB CONNECTION =====
 const connectDB = async () => {
     if (mongoose.connection.readyState === 1) return;
-    return mongoose.connect(process.env.MONGO_URL);
+    return mongoose.connect(process.env.MONGO_URI);
 };
 
 export default async function handler(req, res) {
