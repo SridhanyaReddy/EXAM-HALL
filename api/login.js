@@ -19,7 +19,7 @@ export default function handler(req, res) {
             const token = jwt.sign(
                 { role: "admin" },
                 "secretkey",
-                { expiresIn: "1h" } // token expiry added
+                { expiresIn: "1h" }
             );
 
             return res.status(200).json({ token });

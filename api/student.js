@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGO_URI = "YOUR_MONGO_URI_HERE";
-
+const MONGO_URI = process.env.MONGO_URI;
 let isConnected = false;
 
 // ===== CONNECT DB =====
