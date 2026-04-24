@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Exam Hall Locator</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- ===== LOGIN SECTION ===== -->
+        <h2>Admin Login</h2>
+
+        <input id="username" type="text" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+
+        <!-- ===== ADD STUDENT SECTION ===== -->
+        <div class="admin-section">
+            <h3>Add Student</h3>
+
+            <input id="rollNumber" type="text" placeholder="Roll Number">
+            <input id="examHall" type="text" placeholder="Exam Hall">
+            <button onclick="addStudent()">Add Student</button>
+        </div>
+
+        <!-- ===== MESSAGE ===== -->
+        <p id="msg"></p>
+
+    </div>
+
+    <!-- JS -->
+    <script src="admin.js"></script>
+
+</body>
+</html>
