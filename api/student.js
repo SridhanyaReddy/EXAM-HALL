@@ -13,6 +13,12 @@ const Student =
 // ===== DB CONNECTION =====
 const connectDB = async () => {
     if (mongoose.connection.readyState === 1) return;
+    
+    // Add this check
+    if (!process.env.MONGO_URI) {
+        throw new Error("MONGO_URI is missing from Vercel Settings!");
+    }
+    
     return mongoose.connect(process.env.MONGO_URI);
 };
 
