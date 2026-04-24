@@ -1,54 +1,48 @@
 import mongoose from "mongoose";
 
-const MONGO_URI = process.env.MONGO_URI;
-let isConnected = false;
-
-// ===== CONNECT DB =====
-const connectDB = async () => {
-    if (isConnected) return;
-
-    try {
-        await mongoose.connect(MONGO_URI);
-        isConnected = true;
-    } catch (error) {
-        console.error("DB Connection Error:", error);
-        throw new Error("Database connection failed");
-    }
-};
-
 // ===== SCHEMA =====
 const StudentSchema = new mongoose.Schema({
     rollNumber: { type: String, required: true },
     examHall: { type: String, required: true }
 });
 
+// Prevent model overwrite in dev
 const Student =
-    mongoose.models.Student ||
-    mongoose.model("Student", StudentSchema);
+    mongoose.models.Student || mongoose.model("Student", StudentSchema);
 
-// ===== HANDLER =====
+// ===== DB CONNECTION =====
+const connectDB = async () => {
+    if (mongoose.connection.readyState === 1) return;
+    return mongoose.connect(process.env.MONGO_URL);
+};
+
 export default async function handler(req, res) {
-    // Allow only GET
+    // Only GET allowed
     if (req.method !== "GET") {
-        return res.status(405).json({ message: "Method not allowed" });
+        return res.status(405).json({
+            message: "Method not allowed"
+        });
     }
 
     try {
-        const { roll } = req.query;
-
-        // ===== VALIDATION =====
-        if (!roll) {
-            return res.status(400).json({ message: "Roll number is required" });
-        }
-
-        // ===== CONNECT DB =====
         await connectDB();
 
-        // ===== FIND STUDENT =====
-        const student = await Student.findOne({ rollNumber: roll });
+        const { roll } = req.query;
+
+        if (!roll) {
+            return res.status(400).json({
+                message: "Roll number is required"
+            });
+        }
+
+        const student = await Student.findOne({
+            rollNumber: roll
+        });
 
         if (!student) {
-            return res.status(200).json({ message: "Not found" });
+            return res.status(404).json({
+                message: "Student not found"
+            });
         }
 
         return res.status(200).json({
@@ -57,7 +51,10 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error("Error:", error);
-        return res.status(500).json({ message: "Server error" });
+        console.error("Student API Error:", error);
+
+        return res.status(500).json({
+            message: error.message || "Internal Server Error"
+        });
     }
 }

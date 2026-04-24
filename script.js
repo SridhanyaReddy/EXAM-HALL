@@ -12,13 +12,27 @@ async function findHall() {
 
     try {
         const res = await fetch(`/api/student?roll=${encodeURIComponent(roll)}`);
-        const data = await res.json();
 
-        if (data.examHall) {
-            result.innerText = "Exam Hall: " + data.examHall;
-        } else {
-            result.innerText = "Roll number not found";
+        // ✅ SAFE JSON PARSE
+        let data;
+        try {
+            data = await res.json();
+        } catch (e) {
+            console.error("Invalid JSON response from server");
+            result.innerText = "Server error: invalid response";
+            return;
         }
+
+        if (res.ok) {
+            if (data.examHall) {
+                result.innerText = "Exam Hall: " + data.examHall;
+            } else {
+                result.innerText = data.message || "Roll number not found";
+            }
+        } else {
+            result.innerText = data.message || "Student not found";
+        }
+
     } catch (error) {
         console.error(error);
         result.innerText = "Something went wrong. Try again.";

@@ -1,41 +1,47 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-// ===== SCHEMA DEFINITION =====
+// ===== SCHEMA =====
 const StudentSchema = new mongoose.Schema({
     rollNumber: { type: String, required: true },
     examHall: { type: String, required: true }
 });
 
-// ===== MODEL INITIALIZATION =====
-// Prevent re-compiling the model during hot reloads in development
-const Student = mongoose.models.Student || mongoose.model('Student', StudentSchema);
+const Student =
+    mongoose.models.Student || mongoose.model("Student", StudentSchema);
+
+// ===== CONNECT DB (IMPORTANT) =====
+const connectDB = async () => {
+    if (mongoose.connection.readyState === 1) return;
+
+    return mongoose.connect(process.env.MONGO_URL);
+};
 
 export default async function handler(req, res) {
-    // 1. Only allow POST requests
-    if (req.method !== 'POST') {
+    if (req.method !== "POST") {
         return res.status(405).json({ message: "Method not allowed" });
     }
 
     try {
-    const res = await fetch("/api/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rollNumber, examHall })
-    });
+        await connectDB();
 
-    const contentType = res.headers.get("content-type");
+        const { rollNumber, examHall } = req.body;
 
-    if (contentType && contentType.includes("application/json")) {
-        const data = await res.json();
-        msg.innerText = data.message || (res.ok ? "Success" : "Error");
-    } else {
-        // This catches the "A server error..." text and shows it to you
-        const rawText = await res.text();
-        console.error("Server returned non-JSON response:", rawText);
-        msg.innerText = "Backend Error: " + rawText.substring(0, 50);
+        if (!rollNumber || !examHall) {
+            return res.status(400).json({ message: "All fields required" });
+        }
+
+        const newStudent = new Student({ rollNumber, examHall });
+        await newStudent.save();
+
+        return res.status(200).json({
+            message: "Student added successfully"
+        });
+
+    } catch (error) {
+        console.error("Add API Error:", error);
+
+        return res.status(500).json({
+            message: error.message || "Internal Server Error"
+        });
     }
-} catch (error) {
-    console.error("Network/Parsing Error:", error);
-    msg.innerText = "Check your internet or console.";
 }
-    }
