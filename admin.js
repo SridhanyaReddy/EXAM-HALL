@@ -85,5 +85,12 @@ async function addStudent() {
 
 // ===== HIDE ADMIN SECTION INITIALLY =====
 window.onload = () => {
-    document.querySelector(".admin-section").style.display = "none";
+    const token = localStorage.getItem("token");
+    const adminSection = document.querySelector(".admin-section");
+
+    if (token) {
+        adminSection.style.display = "block";
+    } else {
+        adminSection.style.display = "none";
+    }
 };
