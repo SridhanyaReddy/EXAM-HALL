@@ -1,21 +1,28 @@
 import mongoose from "mongoose";
 
-// ===== SCHEMA =====
+// ================= SCHEMA =================
 const StudentSchema = new mongoose.Schema({
     rollNumber: { type: String, required: true },
     examHall: { type: String, required: true }
 });
 
+// Prevent model overwrite in dev / Vercel hot reload
 const Student =
     mongoose.models.Student || mongoose.model("Student", StudentSchema);
 
-// ===== CONNECT DB (IMPORTANT) =====
+// ================= DB CONNECT =================
 const connectDB = async () => {
     if (mongoose.connection.readyState === 1) return;
 
-    return mongoose.connect(process.connect.MONGO_URI);
+    // 🔴 FIXED: correct env variable usage
+    if (!process.env.MONGO_URI) {
+        throw new Error("MONGO_URI is not defined in Vercel environment variables");
+    }
+
+    return mongoose.connect(process.env.MONGO_URI);
 };
 
+// ================= HANDLER =================
 export default async function handler(req, res) {
     if (req.method !== "POST") {
         return res.status(405).json({ message: "Method not allowed" });
