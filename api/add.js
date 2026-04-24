@@ -1,50 +1,41 @@
-// ===== ADD / UPDATE STUDENT =====
-async function addStudent() {
-    const rollNumber = document.getElementById("rollNumber").value.trim();
-    const examHall = document.getElementById("examHall").value.trim();
-    const msg = document.getElementById("msg");
+import mongoose from 'mongoose';
 
-    // Clear previous message
-    msg.innerText = "";
+// ===== SCHEMA DEFINITION =====
+const StudentSchema = new mongoose.Schema({
+    rollNumber: { type: String, required: true },
+    examHall: { type: String, required: true }
+});
 
-    // ===== VALIDATION =====
-    if (!rollNumber || !examHall) {
-        msg.innerText = "Please enter all fields";
-        return;
-    }
+// ===== MODEL INITIALIZATION =====
+// Prevent re-compiling the model during hot reloads in development
+const Student = mongoose.models.Student || mongoose.model('Student', StudentSchema);
 
-    // ===== GET TOKEN =====
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        msg.innerText = "Please login first";
-        return;
+export default async function handler(req, res) {
+    // 1. Only allow POST requests
+    if (req.method !== 'POST') {
+        return res.status(405).json({ message: "Method not allowed" });
     }
 
     try {
-        const res = await fetch("/api/add", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ rollNumber, examHall })
-        });
+    const res = await fetch("/api/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rollNumber, examHall })
+    });
 
+    const contentType = res.headers.get("content-type");
+
+    if (contentType && contentType.includes("application/json")) {
         const data = await res.json();
-
-        if (res.ok) {
-            msg.innerText = data.message || "Student added successfully";
-
-            // Clear inputs after success
-            document.getElementById("rollNumber").value = "";
-            document.getElementById("examHall").value = "";
-        } else {
-            msg.innerText = data.message || "Failed to add student";
-        }
-
-    } catch (error) {
-        console.error("Add Student Error:", error);
-        msg.innerText = "Server error. Try again.";
+        msg.innerText = data.message || (res.ok ? "Success" : "Error");
+    } else {
+        // This catches the "A server error..." text and shows it to you
+        const rawText = await res.text();
+        console.error("Server returned non-JSON response:", rawText);
+        msg.innerText = "Backend Error: " + rawText.substring(0, 50);
     }
+} catch (error) {
+    console.error("Network/Parsing Error:", error);
+    msg.innerText = "Check your internet or console.";
 }
+    }
